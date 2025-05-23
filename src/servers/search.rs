@@ -26,6 +26,7 @@ impl ServerHandler for SearchServer {
       capabilities: ServerCapabilities::builder()
         .enable_prompts()
         .enable_resources()
+        .enable_tools()
         .build(),
       server_info: Implementation::from_build_env(),
       instructions: Some("This is a search server that can search for strings in files.".to_string()),
