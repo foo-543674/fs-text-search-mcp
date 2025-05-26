@@ -1,10 +1,10 @@
-use std::{fmt::Debug, io};
+use std::io;
 
 pub struct File {
   pub path: String,
   pub content: String,
 }
 
-pub trait FileLoader: Send + Sync + Debug {
+pub trait FileLoader {
   fn load_directory(&self, path: &str) -> Box<dyn Iterator<Item = io::Result<File>>>;
 }

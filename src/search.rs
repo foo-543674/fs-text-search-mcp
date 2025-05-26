@@ -1,2 +1,2 @@
-pub mod search_in_dir;
+pub mod text_index;
 pub mod file;

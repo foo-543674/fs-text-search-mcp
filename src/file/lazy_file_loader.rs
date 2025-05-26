@@ -3,7 +3,6 @@ use std::{fs, path::Path};
 use crate::search::file::{File, FileLoader};
 use walkdir::WalkDir;
 
-#[derive(Debug, Clone)]
 pub struct LazyFileLoader {}
 
 impl LazyFileLoader {
@@ -15,18 +14,18 @@ impl LazyFileLoader {
 impl FileLoader for LazyFileLoader {
   fn load_directory(
     &self,
-    path: &str,
+    dir_path: &str,
   ) -> Box<dyn Iterator<Item = std::io::Result<crate::search::file::File>>> {
-    let walker = WalkDir::new(path)
+    let entries = WalkDir::new(dir_path)
       .into_iter()
-      .filter_map(|e| e.ok())
+      .flatten()
       .filter(|e| e.path().is_file())
       .filter(|e| is_text_file(e.path()));
 
-    Box::new(walker.map(|entry| {
-      let path = entry.path().to_path_buf();
-      fs::read_to_string(&path).map(|content| File {
-        path: path.to_string_lossy().to_string(),
+    Box::new(entries.map(|entry| {
+      let file_path = entry.path().to_path_buf();
+      fs::read_to_string(&file_path).map(|content| File {
+        path: file_path.to_string_lossy().to_string(),
         content,
       })
     }))

@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{fmt::Debug, sync::{Arc, Mutex}};
 
 use rmcp::{
   ServerHandler,
@@ -8,14 +8,22 @@ use rmcp::{
   tool,
 };
 
-use crate::search::{file::FileLoader, search_in_dir::search_in_dir};
+use crate::search::{file::FileLoader, text_index::TextIndex};
 
 use super::error::ServerError;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct SearchServer {
   root_path: String,
-  file_loader: Arc<dyn FileLoader>,
+  index: Arc<Mutex<TextIndex>>,
+}
+
+impl Debug for SearchServer {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.debug_struct("SearchServer")
+      .field("root_path", &self.root_path)
+      .finish()
+  }
 }
 
 #[derive(JsonSchema, Debug, serde::Deserialize)]
@@ -27,15 +35,22 @@ pub struct SearchParams {
 #[tool(tool_box)]
 impl SearchServer {
   pub fn new(root_path: String, file_loader: Arc<dyn FileLoader>) -> Self {
+    let mut index = TextIndex::new().expect("Failed to create text index");
+    index
+      .initialize_index(file_loader.as_ref(), &root_path)
+      .expect("Failed to initialize index");
+
     SearchServer {
       root_path,
-      file_loader,
+      index: Arc::new(Mutex::new(index)),
     }
   }
 
   #[tool(description = "Search for a string in a file")]
   async fn search_index(&self, #[tool(aggr)] params: SearchParams) -> Result<String, ServerError> {
-    search_in_dir(self.file_loader.as_ref(), &self.root_path)(&params.keyword)
+    let index = self.index.lock().map_err(|_| ServerError(anyhow::anyhow!("Failed to lock index")))?;
+    index
+      .search(&params.keyword)
       .map_err(ServerError)
       .and_then(|results| {
         if results.is_empty() {
