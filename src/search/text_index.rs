@@ -108,9 +108,7 @@ impl TextIndex {
           .doc(*doc_address)
           .map(|doc: TantivyDocument| doc.to_json(&self.schema))
       })
-      .flatten()
-      .collect::<Vec<String>>();
-
+      .collect::<Result<Vec<String>, _>>()?;
     Ok(results)
   }
 }
