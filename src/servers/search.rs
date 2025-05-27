@@ -8,20 +8,18 @@ use rmcp::{
   tool,
 };
 
-use crate::search::{file::FileLoader, text_index::TextIndex};
+use crate::search::text_index::TextIndex;
 
 use super::error::ServerError;
 
 #[derive(Clone)]
 pub struct SearchServer {
-  root_path: String,
   index: Arc<Mutex<TextIndex>>,
 }
 
 impl Debug for SearchServer {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.debug_struct("SearchServer")
-      .field("root_path", &self.root_path)
       .finish()
   }
 }
@@ -34,15 +32,9 @@ pub struct SearchParams {
 
 #[tool(tool_box)]
 impl SearchServer {
-  pub fn new(root_path: String, file_loader: Arc<dyn FileLoader>) -> Self {
-    let mut index = TextIndex::new().expect("Failed to create text index");
-    index
-      .initialize_index(file_loader.as_ref(), &root_path)
-      .expect("Failed to initialize index");
-
+  pub fn new(index: Arc<Mutex<TextIndex>>) -> Self {
     SearchServer {
-      root_path,
-      index: Arc::new(Mutex::new(index)),
+      index,
     }
   }
 

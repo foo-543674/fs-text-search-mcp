@@ -29,7 +29,7 @@ pub trait FileWatcher {
   fn stop_watching(&mut self) -> Result<()>;
 }
 
-pub struct NofityFileWatcher {
+pub struct NotifyFileWatcher {
   watcher: Option<notify::RecommendedWatcher>,
   stop_tx: Option<std::sync::mpsc::Sender<()>>,
   watch_target: Option<String>,
@@ -52,6 +52,7 @@ fn event_loop(
 
     match rx.recv_timeout(Duration::from_millis(100)) {
       Ok(Ok(event)) => {
+        tracing::debug!("Received event: {:?}", event);
         let _ = process_event(event, &target_filter, &created, &modified, &deleted)
           .map_err(|e| {
             tracing::error!("Error processing event: {}", e);
@@ -116,9 +117,9 @@ fn process_event(
   Ok(())
 }
 
-impl NofityFileWatcher {
+impl NotifyFileWatcher {
   pub fn new(target_filter: Arc<dyn FileFilter + Send + Sync>) -> Self {
-    NofityFileWatcher {
+    NotifyFileWatcher {
       watcher: None,
       stop_tx: None,
       watch_target: None,
@@ -128,7 +129,7 @@ impl NofityFileWatcher {
   }
 }
 
-impl FileWatcher for NofityFileWatcher {
+impl FileWatcher for NotifyFileWatcher {
   fn watch_directory(
     &mut self,
     path: &str,
@@ -178,7 +179,7 @@ impl FileWatcher for NofityFileWatcher {
   }
 }
 
-impl Drop for NofityFileWatcher {
+impl Drop for NotifyFileWatcher {
   fn drop(&mut self) {
     self.stop_watching().unwrap_or_else(|e| {
       tracing::error!("Failed to stop file watcher: {}", e);

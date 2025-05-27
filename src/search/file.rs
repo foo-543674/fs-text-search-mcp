@@ -1,5 +1,6 @@
 use std::io;
 
+#[derive(Debug, Clone)]
 pub struct File {
   pub path: String,
   pub content: String,
