@@ -1,6 +1,9 @@
 use std::sync::Arc;
 
-use fs_text_search_mcp::servers::search::SearchServer;
+use fs_text_search_mcp::{
+  file::{file_filter::ExtensionFileFilter, lazy_file_loader::LazyFileLoader},
+  servers::search::SearchServer,
+};
 use rmcp::{ServiceExt, transport::stdio};
 use tracing_subscriber::{self, EnvFilter};
 
@@ -14,7 +17,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   tracing::info!("Starting Server...");
 
-  let file_loader = Arc::new(fs_text_search_mcp::file::lazy_file_loader::LazyFileLoader::new());
+  let file_filter = Arc::new(ExtensionFileFilter::new(vec!["txt", "md"]));
+  let file_loader = Arc::new(LazyFileLoader::new(file_filter));
   let service = SearchServer::new("foo".to_string(), file_loader)
     .serve(stdio())
     .await

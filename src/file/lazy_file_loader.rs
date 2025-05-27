@@ -1,13 +1,19 @@
-use std::{fs, path::Path};
+use std::{fs, sync::Arc};
 
 use crate::search::file::{File, FileLoader};
 use walkdir::WalkDir;
 
-pub struct LazyFileLoader {}
+use super::file_filter::FileFilter;
+
+pub struct LazyFileLoader {
+  filter: Arc<dyn FileFilter>,
+}
 
 impl LazyFileLoader {
-  pub fn new() -> Self {
-    LazyFileLoader {}
+  pub fn new(filter: Arc<dyn FileFilter>) -> Self {
+    LazyFileLoader {
+      filter: filter.clone(),
+    }
   }
 }
 
@@ -15,12 +21,12 @@ impl FileLoader for LazyFileLoader {
   fn load_directory(
     &self,
     dir_path: &str,
-  ) -> Box<dyn Iterator<Item = std::io::Result<crate::search::file::File>>> {
+  ) -> Box<dyn Iterator<Item = std::io::Result<crate::search::file::File>> + '_> {
     let entries = WalkDir::new(dir_path)
       .into_iter()
       .flatten()
       .filter(|e| e.path().is_file())
-      .filter(|e| is_text_file(e.path()));
+      .filter(|e| self.filter.is_target(e.path()));
 
     Box::new(entries.map(|entry| {
       let file_path = entry.path().to_path_buf();
@@ -29,13 +35,5 @@ impl FileLoader for LazyFileLoader {
         content,
       })
     }))
-  }
-}
-
-fn is_text_file(path: &Path) -> bool {
-  if let Some(ext) = path.extension() {
-    matches!(ext.to_str(), Some("txt" | "md" | "rs" | "toml" | "json"))
-  } else {
-    false
   }
 }

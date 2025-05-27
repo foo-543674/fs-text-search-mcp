@@ -6,5 +6,5 @@ pub struct File {
 }
 
 pub trait FileLoader {
-  fn load_directory(&self, path: &str) -> Box<dyn Iterator<Item = io::Result<File>>>;
+  fn load_directory(&self, path: &str) -> Box<dyn Iterator<Item = io::Result<File>> + '_>;
 }
