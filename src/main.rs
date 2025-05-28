@@ -1,21 +1,46 @@
-use fs_text_search_mcp::servers::search::SearchServer;
-use rmcp::{ServiceExt, transport::stdio};
-use tracing_subscriber::{self, EnvFilter};
+use clap::Parser;
+use fs_text_search_mcp::application;
+use std::path::PathBuf;
+use tracing_subscriber::EnvFilter;
+
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+  /// Directory to watch for file changes
+  #[arg(short, long, default_value = ".")]
+  watch_dir: PathBuf,
+
+  /// Directory to store the search index (if not specified, use in-memory)
+  #[arg(short, long)]
+  index_dir: Option<PathBuf>,
+
+  /// File extensions to include (comma-separated)
+  #[arg(short, long, default_value = "txt,md")]
+  extensions: String,
+
+  /// Enable verbose logging
+  #[arg(short, long)]
+  verbose: bool,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env().add_directive(tracing::Level::DEBUG.into()))
-        .with_writer(std::io::stderr)
-        .with_ansi(false)
-        .init();
+  let cli = Cli::parse();
 
-    tracing::info!("Starting Server...");
+  let log_level = if cli.verbose {
+    tracing::Level::DEBUG
+  } else {
+    tracing::Level::INFO
+  };
 
-    let service = SearchServer::new().serve(stdio()).await.inspect_err(|e| {
-        tracing::error!("serving error: {:?}", e);
-    })?;
+  tracing_subscriber::fmt()
+    .with_env_filter(EnvFilter::from_default_env().add_directive(log_level.into()))
+    .with_writer(std::io::stderr)
+    .with_ansi(false)
+    .init();
 
-    service.waiting().await?;
-    Ok(())
+  let application = application::Application::new(cli.watch_dir, cli.index_dir, cli.extensions)?;
+  application.run().await?;
+
+  Ok(())
 }
