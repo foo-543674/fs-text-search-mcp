@@ -163,7 +163,7 @@ fn process_operations(
             ) {
               (true, true) => {
                 let file = file_loader.load_file(new_path)?;
-                index.delete_doc(&old_path)?;
+                index.delete_doc(old_path)?;
                 index.add_doc(&file)?;
               }
               (true, false) => {
@@ -182,7 +182,7 @@ fn process_operations(
           FileOperation::DirectoryRenamed { old_path, new_path } => {
             index.delete_docs_by_path_prefix(old_path)?;
             file_loader
-              .load_directory(&new_path)
+              .load_directory(new_path)
               .filter_map(Result::ok)
               .filter(|file| file_filter.is_target(&file.path))
               .for_each(|file| {

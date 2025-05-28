@@ -69,7 +69,7 @@ impl SearchServer {
       .file_loader
       .load_file(&params.file_path)
       .map_err(|e| ServerError(anyhow::anyhow!("Failed to load file: {}", e)))
-      .and_then(|file| Ok(file.content))
+      .map(|file| file.content)
   }
 }
 

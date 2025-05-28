@@ -35,6 +35,12 @@ impl NotifyFileWatcher {
   }
 }
 
+impl Default for NotifyFileWatcher {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl FileWatcher for NotifyFileWatcher {
   fn watch_directory(&mut self, path: &str, handler: Box<FileOperationHandler>) -> Result<()> {
     let (tx, rx) = channel::<DebounceEventResult>();
@@ -116,10 +122,10 @@ fn event_loop(
 }
 
 fn process_paths(
-  paths: &Vec<PathBuf>,
+  paths: &[PathBuf],
   f: impl Fn(&Path) -> Result<FileOperation>,
 ) -> Vec<Result<FileOperation>> {
-  paths.into_iter().map(|path| f(&path)).collect()
+  paths.iter().map(|path| f(path)).collect()
 }
 
 pub fn normalize_notify_path(path: &Path) -> PathBuf {
@@ -130,7 +136,7 @@ pub fn normalize_notify_path(path: &Path) -> PathBuf {
     .collect::<PathBuf>()
 }
 
-fn process_events(events: Vec<DebouncedEvent>, handler: &Box<FileOperationHandler>) -> Result<()> {
+fn process_events(events: Vec<DebouncedEvent>, handler: &FileOperationHandler) -> Result<()> {
   events
     .into_iter()
     .flat_map(|event| {
@@ -154,15 +160,15 @@ fn process_events(events: Vec<DebouncedEvent>, handler: &Box<FileOperationHandle
             let new_path = event.paths.get(NEW_PATH_INDEX);
             if let (Some(old), Some(new)) = (old_path, new_path) {
               if new.is_file() {
-                return vec![Ok(FileOperation::FileRenamed {
+                vec![Ok(FileOperation::FileRenamed {
                   old_path: normalize_notify_path(old).to_string_lossy().to_string(),
                   new_path: normalize_notify_path(new).to_string_lossy().to_string(),
-                })];
+                })]
               } else {
-                return vec![Ok(FileOperation::DirectoryRenamed {
+                vec![Ok(FileOperation::DirectoryRenamed {
                   old_path: normalize_notify_path(old).to_string_lossy().to_string(),
                   new_path: normalize_notify_path(new).to_string_lossy().to_string(),
-                })];
+                })]
               }
             } else {
               vec![Err(anyhow::anyhow!("Rename event missing paths"))]

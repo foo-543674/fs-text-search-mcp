@@ -12,6 +12,12 @@ impl LazyFileLoader {
   }
 }
 
+impl Default for LazyFileLoader {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl FileLoader for LazyFileLoader {
   fn load_directory(
     &self,

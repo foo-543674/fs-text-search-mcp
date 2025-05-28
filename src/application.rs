@@ -57,12 +57,12 @@ impl Application {
       Box::new(move |op| index_operation.enqueue(op))
     })?;
 
-    return Ok(Application {
+    Ok(Application {
       index,
       file_loader: file_loader.clone(),
       _index_operation: index_operation,
       _file_watcher: file_watcher,
-    });
+    })
   }
 
   pub async fn run(&self) -> Result<QuitReason> {
