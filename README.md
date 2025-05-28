@@ -26,7 +26,7 @@ Add the following configuration to your Claude Desktop config file:
         "run", "--rm", "-i",
         "-v", "/path/to/your/documents:/workspace",
         "-v", "/path/to/search/index:/index",
-        "fs-text-search-mcp",
+        "foobarxyzzy/fs-text-search-mcp",
         "--watch-dir", "/workspace",
         "--extensions", "txt,md,rs,py,js,ts,json",
         "--index-dir", "/index"
@@ -36,7 +36,7 @@ Add the following configuration to your Claude Desktop config file:
 }
 ```
 
-#### Windows Configuration
+#### Windows Configuration (via WSL)
 
 **Config file location**: `%APPDATA%\Claude\claude_desktop_config.json`
 
@@ -46,13 +46,9 @@ Add the following configuration to your Claude Desktop config file:
     "fs-text-search": {
       "command": "wsl.exe",
       "args": [
-        "docker", "run", "--rm", "-i",
-        "-v", "/mnt/c/path/to/your/documents:/workspace",
-        "-v", "/mnt/c/path/to/search/index:/index",
-        "fs-text-search-mcp",
-        "--watch-dir", "/workspace",
-        "--extensions", "txt,md,rs,py,js,ts,json",
-        "--index-dir", "/index"
+        "bash",
+        "-c",
+        "/usr/bin/docker run -i --rm -v /mnt/c/path/to/your/documents:/workspace -v /mnt/c/path/to/search/index:/index foobarxyzzy/fs-text-search-mcp --watch-dir /workspace --index-dir /index --extensions txt,md,rs,py,js,ts,json"
       ]
     }
   }
