@@ -24,12 +24,10 @@ Add the following configuration to your Claude Desktop config file:
       "command": "docker",
       "args": [
         "run", "--rm", "-i",
-        "-v", "/path/to/your/documents:/workspace",
-        "-v", "/path/to/search/index:/index",
+        "-v", "/path/to/your/documents:/home/source",
+        "-v", "/path/to/search/index:/home/index",
         "foobarxyzzy/fs-text-search-mcp",
-        "--watch-dir", "/workspace",
         "--extensions", "txt,md,rs,py,js,ts,json",
-        "--index-dir", "/index"
       ]
     }
   }
@@ -48,7 +46,7 @@ Add the following configuration to your Claude Desktop config file:
       "args": [
         "bash",
         "-c",
-        "/usr/bin/docker run -i --rm -v /mnt/c/path/to/your/documents:/workspace -v /mnt/c/path/to/search/index:/index foobarxyzzy/fs-text-search-mcp --watch-dir /workspace --index-dir /index --extensions txt,md,rs,py,js,ts,json"
+        "/usr/bin/docker run -i --rm -v /mnt/c/path/to/your/documents:/home/source -v /mnt/c/path/to/search/index:/home/index foobarxyzzy/fs-text-search-mcp --extensions txt,md,rs,py,js,ts,json"
       ]
     }
   }
@@ -59,8 +57,6 @@ Add the following configuration to your Claude Desktop config file:
 
 | Option | Short | Description | Default |
 |--------|-------|-------------|--------|
-| `--watch-dir` | `-w` | Directory to watch for file changes | `./target_dir` |
-| `--index-dir` | `-i` | Directory to store search index (optional) | In-memory |
 | `--extensions` | `-e` | File extensions to include (comma-separated) | `txt,md` |
 | `--verbose` | `-v` | Enable verbose logging | false |
 | `--help` | `-h` | Show help message | - |
@@ -72,6 +68,15 @@ Add the following configuration to your Claude Desktop config file:
 ```bash
 $ cargo run
 ```
+
+#### Options
+
+| Option | Short | Description | Default |
+|--------|-------|-------------|--------|
+| `--watch-dir` | `-w` | Directory to watch for file changes | `./` |
+| `--index-dir` | `-i` | Directory to store search index (optional) | In-memory |
+| `--extensions` | `-e` | File extensions to include (comma-separated) | `txt,md` |
+| `--verbose` | `-v` | Enable verbose logging | false |
 
 #### Example MCP Interactions
 
