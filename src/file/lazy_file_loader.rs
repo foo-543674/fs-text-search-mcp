@@ -1,19 +1,14 @@
-use std::{fs, sync::Arc};
-
-use crate::search::file::{File, FileLoader};
+use anyhow::Result;
 use walkdir::WalkDir;
 
-use super::file_filter::FileFilter;
+use crate::search::file::{File, FileLoader};
+use super::read_file::path_to_file;
 
-pub struct LazyFileLoader {
-  filter: Arc<dyn FileFilter>,
-}
+pub struct LazyFileLoader {}
 
 impl LazyFileLoader {
-  pub fn new(filter: Arc<dyn FileFilter>) -> Self {
-    LazyFileLoader {
-      filter: filter.clone(),
-    }
+  pub fn new() -> Self {
+    LazyFileLoader {}
   }
 }
 
@@ -21,19 +16,19 @@ impl FileLoader for LazyFileLoader {
   fn load_directory(
     &self,
     dir_path: &str,
-  ) -> Box<dyn Iterator<Item = std::io::Result<crate::search::file::File>> + '_> {
-    let entries = WalkDir::new(dir_path)
+  ) -> Box<dyn Iterator<Item = Result<crate::search::file::File>> + '_> {
+    let paths = WalkDir::new(dir_path)
       .into_iter()
       .flatten()
-      .filter(|e| e.path().is_file())
-      .filter(|e| self.filter.is_target(e.path()));
+      .map(|e| e.path().to_owned())
+      .flat_map(|p| p.canonicalize())
+      .filter(|p| p.is_file());
 
-    Box::new(entries.map(|entry| {
-      let file_path = entry.path().to_path_buf();
-      fs::read_to_string(&file_path).map(|content| File {
-        path: file_path.to_string_lossy().to_string(),
-        content,
-      })
-    }))
+    Box::new(paths.map(|p| path_to_file(&p)))
+  }
+
+  fn load_file(&self, path: &str) -> Result<File> {
+    let file_path = std::path::Path::new(path);
+    path_to_file(file_path)
   }
 }

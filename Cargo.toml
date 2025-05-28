@@ -5,7 +5,8 @@ edition = "2024"
 
 [dependencies]
 anyhow = { version = "1.0.98", features = ["backtrace"] }
-notify = "8.0.0"
+notify-debouncer-full = "0.3"
+clap = { version = "4.0", features = ["derive"] }
 rmcp = { version = "0.1.5", features = ["server", "transport-io"] }
 serde = "1.0.219"
 tantivy = "0.24.1"
