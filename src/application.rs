@@ -10,7 +10,11 @@ use crate::{
     file_filter::ExtensionFileFilter, file_watcher::NotifyFileWatcher,
     lazy_file_loader::LazyFileLoader,
   },
-  search::{file::{FileLoader, FileWatcher}, index_operation::IndexOperation, text_index::TextIndex},
+  search::{
+    file::{FileLoader, FileWatcher},
+    index_operation::IndexOperation,
+    text_index::TextIndex,
+  },
   servers::search::SearchServer,
 };
 

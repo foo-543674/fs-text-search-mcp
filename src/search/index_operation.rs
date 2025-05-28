@@ -485,9 +485,12 @@ mod tests {
       "Loaded content after rename.".to_string(),
     ));
 
-    let index_operation =
-      IndexOperation::new(text_index.clone(), file_filter.clone(), file_loader_for_rename.clone())
-        .expect("Failed to create IndexOperation");
+    let index_operation = IndexOperation::new(
+      text_index.clone(),
+      file_filter.clone(),
+      file_loader_for_rename.clone(),
+    )
+    .expect("Failed to create IndexOperation");
     index_operation
       .initialize_index("test_dir", file_filter.clone(), file_loader.clone())
       .expect("Failed to initialize index");

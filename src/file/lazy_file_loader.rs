@@ -1,8 +1,8 @@
 use anyhow::Result;
 use walkdir::WalkDir;
 
-use crate::search::file::{File, FileLoader};
 use super::read_file::path_to_file;
+use crate::search::file::{File, FileLoader};
 
 pub struct LazyFileLoader {}
 

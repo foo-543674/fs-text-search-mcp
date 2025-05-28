@@ -25,14 +25,8 @@ pub trait FileLoader {
 pub enum FileOperation {
   FileCreated(String),
   FileModified(String),
-  FileRenamed {
-    old_path: String,
-    new_path: String,
-  },
-  DirectoryRenamed {
-    old_path: String,
-    new_path: String,
-  },
+  FileRenamed { old_path: String, new_path: String },
+  DirectoryRenamed { old_path: String, new_path: String },
   FileDeleted(String),
   DirectoryDeleted(String),
 }
@@ -40,10 +34,6 @@ pub enum FileOperation {
 pub type FileOperationHandler = dyn Fn(&FileOperation) -> Result<()> + Send + Sync;
 
 pub trait FileWatcher {
-  fn watch_directory(
-    &mut self,
-    path: &str,
-    handler : Box<FileOperationHandler>,
-  ) -> Result<()>;
+  fn watch_directory(&mut self, path: &str, handler: Box<FileOperationHandler>) -> Result<()>;
   fn stop_watching(&mut self) -> Result<()>;
 }

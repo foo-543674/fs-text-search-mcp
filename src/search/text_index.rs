@@ -2,8 +2,8 @@ use anyhow::Error;
 use std::path::Path;
 use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
-use tantivy::{schema::*, IndexReader};
 use tantivy::{Index, IndexWriter, ReloadPolicy, TantivyDocument, Term, doc};
+use tantivy::{IndexReader, schema::*};
 
 use super::file::File;
 

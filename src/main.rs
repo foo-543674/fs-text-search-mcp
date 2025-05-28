@@ -1,26 +1,26 @@
 use clap::Parser;
 use fs_text_search_mcp::application;
-use tracing_subscriber::EnvFilter;
 use std::path::PathBuf;
+use tracing_subscriber::EnvFilter;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
-    /// Directory to watch for file changes
-    #[arg(short, long, default_value = ".")]
-    watch_dir: PathBuf,
+  /// Directory to watch for file changes
+  #[arg(short, long, default_value = ".")]
+  watch_dir: PathBuf,
 
-    /// Directory to store the search index (if not specified, use in-memory)
-    #[arg(short, long)]
-    index_dir: Option<PathBuf>,
+  /// Directory to store the search index (if not specified, use in-memory)
+  #[arg(short, long)]
+  index_dir: Option<PathBuf>,
 
-    /// File extensions to include (comma-separated)
-    #[arg(short, long, default_value = "txt,md")]
-    extensions: String,
+  /// File extensions to include (comma-separated)
+  #[arg(short, long, default_value = "txt,md")]
+  extensions: String,
 
-    /// Enable verbose logging
-    #[arg(short, long)]
-    verbose: bool,
+  /// Enable verbose logging
+  #[arg(short, long)]
+  verbose: bool,
 }
 
 #[tokio::main]
@@ -28,9 +28,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   let cli = Cli::parse();
 
   let log_level = if cli.verbose {
-      tracing::Level::DEBUG
+    tracing::Level::DEBUG
   } else {
-      tracing::Level::INFO
+    tracing::Level::INFO
   };
 
   tracing_subscriber::fmt()
@@ -39,11 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .with_ansi(false)
     .init();
 
-  let application = application::Application::new(
-      cli.watch_dir,
-      cli.index_dir,
-      cli.extensions,
-  )?;
+  let application = application::Application::new(cli.watch_dir, cli.index_dir, cli.extensions)?;
   application.run().await?;
 
   Ok(())

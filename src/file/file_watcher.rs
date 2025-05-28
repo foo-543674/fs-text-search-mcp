@@ -8,7 +8,7 @@ use notify_debouncer_full::{
 };
 use std::{
   path::{Component, Path, PathBuf},
-  sync::mpsc::{channel, Receiver},
+  sync::mpsc::{Receiver, channel},
   thread,
   time::Duration,
 };

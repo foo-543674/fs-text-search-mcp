@@ -64,14 +64,12 @@ impl SearchServer {
   }
 
   #[tool(description = "Load a file by its path")]
-  async fn load_file(&self,#[tool(aggr)] params: LoadFileParams) -> Result<String, ServerError> {
+  async fn load_file(&self, #[tool(aggr)] params: LoadFileParams) -> Result<String, ServerError> {
     self
       .file_loader
       .load_file(&params.file_path)
       .map_err(|e| ServerError(anyhow::anyhow!("Failed to load file: {}", e)))
-      .and_then(|file| {
-        Ok(file.content)
-      })
+      .and_then(|file| Ok(file.content))
   }
 }
 
