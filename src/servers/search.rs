@@ -1,4 +1,7 @@
-use std::{fmt::Debug, sync::{Arc, Mutex}};
+use std::{
+  fmt::Debug,
+  sync::{Arc, Mutex},
+};
 
 use rmcp::{
   ServerHandler,
@@ -8,19 +11,19 @@ use rmcp::{
   tool,
 };
 
-use crate::search::text_index::TextIndex;
+use crate::search::{file::FileLoader, text_index::TextIndex};
 
 use super::error::ServerError;
 
 #[derive(Clone)]
 pub struct SearchServer {
   index: Arc<Mutex<TextIndex>>,
+  file_loader: Arc<dyn FileLoader + Send + Sync>,
 }
 
 impl Debug for SearchServer {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.debug_struct("SearchServer")
-      .finish()
+    f.debug_struct("SearchServer").finish()
   }
 }
 
@@ -30,17 +33,24 @@ pub struct SearchParams {
   pub keyword: String,
 }
 
+#[derive(JsonSchema, Debug, serde::Deserialize)]
+pub struct LoadFileParams {
+  #[schemars(description = "Path to the file to load.")]
+  pub file_path: String,
+}
+
 #[tool(tool_box)]
 impl SearchServer {
-  pub fn new(index: Arc<Mutex<TextIndex>>) -> Self {
-    SearchServer {
-      index,
-    }
+  pub fn new(index: Arc<Mutex<TextIndex>>, file_loader: Arc<dyn FileLoader + Send + Sync>) -> Self {
+    SearchServer { index, file_loader }
   }
 
   #[tool(description = "Search for a string in a file")]
   async fn search_index(&self, #[tool(aggr)] params: SearchParams) -> Result<String, ServerError> {
-    let index = self.index.lock().map_err(|_| ServerError(anyhow::anyhow!("Failed to lock index")))?;
+    let index = self
+      .index
+      .lock()
+      .map_err(|_| ServerError(anyhow::anyhow!("Failed to lock index")))?;
     index
       .search(&params.keyword)
       .map_err(ServerError)
@@ -50,6 +60,17 @@ impl SearchServer {
         } else {
           Ok(format!("[{}]", results.join(", ")))
         }
+      })
+  }
+
+  #[tool(description = "Load a file by its path")]
+  async fn load_file(&self,#[tool(aggr)] params: LoadFileParams) -> Result<String, ServerError> {
+    self
+      .file_loader
+      .load_file(&params.file_path)
+      .map_err(|e| ServerError(anyhow::anyhow!("Failed to load file: {}", e)))
+      .and_then(|file| {
+        Ok(file.content)
       })
   }
 }

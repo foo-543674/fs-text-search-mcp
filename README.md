@@ -90,8 +90,8 @@ $ cargo run
 // Search for content
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_index","arguments":{"keyword":"function"}}}
 
-// Search with multiple keywords
-{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_index","arguments":{"keyword":"async function"}}}
+// Load file
+{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"load_file","arguments":{"file_path":"/path/to/file"}}}
 ```
 
 ### Dependencies

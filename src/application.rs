@@ -10,12 +10,13 @@ use crate::{
     file_filter::ExtensionFileFilter, file_watcher::NotifyFileWatcher,
     lazy_file_loader::LazyFileLoader,
   },
-  search::{file::FileWatcher, index_operation::IndexOperation, text_index::TextIndex},
+  search::{file::{FileLoader, FileWatcher}, index_operation::IndexOperation, text_index::TextIndex},
   servers::search::SearchServer,
 };
 
 pub struct Application {
   index: Arc<Mutex<TextIndex>>,
+  file_loader: Arc<dyn FileLoader + Send + Sync>,
   _index_operation: Arc<IndexOperation>,
   _file_watcher: NotifyFileWatcher,
 }
@@ -47,23 +48,21 @@ impl Application {
       file_loader.clone(),
     )?;
 
-    file_watcher.watch_directory(
-      watch_dir.to_string_lossy().as_ref(),
-      {
-        let index_operation = index_operation.clone();
-        Box::new(move |op| index_operation.enqueue(op))
-      },
-    )?;
+    file_watcher.watch_directory(watch_dir.to_string_lossy().as_ref(), {
+      let index_operation = index_operation.clone();
+      Box::new(move |op| index_operation.enqueue(op))
+    })?;
 
     return Ok(Application {
       index,
+      file_loader: file_loader.clone(),
       _index_operation: index_operation,
       _file_watcher: file_watcher,
     });
   }
 
   pub async fn run(&self) -> Result<QuitReason> {
-    let service = SearchServer::new(self.index.clone())
+    let service = SearchServer::new(self.index.clone(), self.file_loader.clone())
       .serve(stdio())
       .await
       .inspect_err(|e| {
