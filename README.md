@@ -5,49 +5,61 @@ A Model Context Protocol (MCP) server that provides full-text search capabilitie
 ## Features
 
 - 🔍 **Full-text search** with Tantivy search engine
-- 📁 **Directory watching** with automatic index updates
 - 🔄 **Real-time synchronization** when files are created, modified, or deleted
-- 💾 **Persistent index** option (file-based or in-memory)
-- 🎯 **Configurable extensions** to filter file types
-- ⚡ **Debounced file events** to avoid duplicate processing
-- 🛠️ **CLI configuration** with command-line options
 
 ## Usage
 
-### Installation
+### MCP Client Configuration
 
-```bash
-# Clone the repository
-git clone <repository-url>
-cd fs-text-search-mcp
+Add the following configuration to your Claude Desktop config file:
 
-# Build the project
-cargo build --release
+#### macOS Configuration
+
+**Config file location**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "fs-text-search": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-v", "/path/to/your/documents:/workspace",
+        "-v", "/path/to/search/index:/index",
+        "fs-text-search-mcp",
+        "--watch-dir", "/workspace",
+        "--extensions", "txt,md,rs,py,js,ts,json",
+        "--index-dir", "/index"
+      ]
+    }
+  }
+}
 ```
 
-### Basic Usage
+#### Windows Configuration
 
-```bash
-# Basic usage with in-memory index
-./target/release/fs-text-search-mcp --watch-dir ./documents
+**Config file location**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-# With file-based persistent index
-./target/release/fs-text-search-mcp \
-  --watch-dir ./documents \
-  --index-dir ./search_index
-
-# Specify file extensions to monitor
-./target/release/fs-text-search-mcp \
-  --watch-dir ./documents \
-  --extensions "txt,md,rs,py,js,ts,json"
-
-# Enable verbose logging
-./target/release/fs-text-search-mcp \
-  --watch-dir ./documents \
-  --verbose
+```json
+{
+  "mcpServers": {
+    "fs-text-search": {
+      "command": "wsl.exe",
+      "args": [
+        "docker", "run", "--rm", "-i",
+        "-v", "/mnt/c/path/to/your/documents:/workspace",
+        "-v", "/mnt/c/path/to/search/index:/index",
+        "fs-text-search-mcp",
+        "--watch-dir", "/workspace",
+        "--extensions", "txt,md,rs,py,js,ts,json",
+        "--index-dir", "/index"
+      ]
+    }
+  }
+}
 ```
 
-### Command Line Options
+#### Options
 
 | Option | Short | Description | Default |
 |--------|-------|-------------|--------|
@@ -57,41 +69,13 @@ cargo build --release
 | `--verbose` | `-v` | Enable verbose logging | false |
 | `--help` | `-h` | Show help message | - |
 
-### Examples
+### Contribute
 
-#### Monitor a project directory
+#### Run in local
+
 ```bash
-./fs-text-search-mcp \
-  --watch-dir ~/projects/my-project \
-  --index-dir ~/.cache/search-index \
-  --extensions "rs,toml,md,txt" \
-  --verbose
+$ cargo run
 ```
-
-#### Monitor documentation
-```bash
-./fs-text-search-mcp \
-  --watch-dir ~/Documents \
-  --extensions "md,txt,pdf,docx" \
-  --index-dir ./docs-index
-```
-
-#### Development mode
-```bash
-cargo run -- \
-  --watch-dir ./src \
-  --extensions "rs,toml" \
-  --verbose
-```
-
-### MCP Client Integration
-
-Once the server is running, you can interact with it via MCP protocol:
-
-#### Available Tools
-
-- **search_index**: Search for text within indexed files
-  - Parameter: `keyword` (string) - The search query
 
 #### Example MCP Interactions
 
@@ -108,67 +92,6 @@ Once the server is running, you can interact with it via MCP protocol:
 
 // Search with multiple keywords
 {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"search_index","arguments":{"keyword":"async function"}}}
-```
-
-## Development
-
-### Local Development
-
-```bash
-# Run in development mode
-cargo run -- --watch-dir ./target_dir --verbose
-
-# Run tests
-cargo test
-
-# Check code formatting
-cargo fmt
-
-# Run clippy for linting
-cargo clippy
-```
-
-### Manual Testing with MCP Protocol
-
-You can test the MCP server manually using JSON-RPC messages:
-
-```bash
-# Start the server
-cargo run -- --watch-dir ./test-files --verbose
-
-# In another terminal, send MCP messages:
-# Initialize request
-echo '{"jsonrpc":"2.0","id":0,"method":"initialize","params":{"protocolVersion":"2024-11-05","clientInfo":{"name":"test-client","version":"1.0.0"},"capabilities":{}}}' | nc localhost 3000
-
-# Notify initialized
-echo '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}' | nc localhost 3000
-
-# Get tools
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | nc localhost 3000
-
-# Search
-echo '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_index","arguments":{"keyword":"function"}}}' | nc localhost 3000
-```
-
-### Architecture
-
-The project follows a modular architecture with clear separation of concerns:
-
-```
-src/
-├── file/                    # File system operations
-│   ├── file_filter.rs      # File filtering logic
-│   ├── file_watcher.rs     # File system monitoring
-│   ├── lazy_file_loader.rs # Directory scanning
-│   └── read_file.rs        # File reading utilities
-├── search/                  # Search functionality
-│   ├── file.rs             # File model and traits
-│   ├── index_operation.rs  # Index update queue
-│   └── text_index.rs       # Tantivy index wrapper
-├── servers/                 # MCP server implementation
-│   ├── error.rs            # Error handling
-│   └── search.rs           # Search server
-└── main.rs                  # Application entry point
 ```
 
 ### Dependencies
