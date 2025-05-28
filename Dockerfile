@@ -18,4 +18,4 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 COPY --from=builder /usr/src/app/target/release/fs-text-search-mcp /usr/local/bin
 
 USER appuser
-CMD ["fs-text-search-mcp"]
+ENTRYPOINT ["fs-text-search-mcp"]
