@@ -18,9 +18,13 @@ struct Cli {
   #[arg(short, long, default_value = "txt,md")]
   extensions: String,
 
-  /// Enable verbose logging
+  /// Enable verbose logging (debug level)
   #[arg(short, long)]
   verbose: bool,
+
+  // Only error logging (ideal for MCP usage)
+  #[arg(short, long)]
+  quiet: bool,
 }
 
 #[tokio::main]
@@ -29,6 +33,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
   let log_level = if cli.verbose {
     tracing::Level::DEBUG
+  } else if cli.quiet {
+    tracing::Level::ERROR
   } else {
     tracing::Level::INFO
   };

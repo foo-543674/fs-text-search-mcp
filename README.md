@@ -58,15 +58,13 @@ Add the following configuration to your Claude Desktop config file:
 | Option | Short | Description | Default |
 |--------|-------|-------------|--------|
 | `--extensions` | `-e` | File extensions to include (comma-separated) | `txt,md` |
-| `--verbose` | `-v` | Enable verbose logging | false |
-| `--help` | `-h` | Show help message | - |
 
 ### Contribute
 
 #### Run in local
 
 ```bash
-$ cargo run
+$ cargo run -- --watch-dir /path/to/source
 ```
 
 #### Options
@@ -77,6 +75,7 @@ $ cargo run
 | `--index-dir` | `-i` | Directory to store search index (optional) | In-memory |
 | `--extensions` | `-e` | File extensions to include (comma-separated) | `txt,md` |
 | `--verbose` | `-v` | Enable verbose logging | false |
+| `--quiet` | `-q` | Only error log and response are showing | false |
 
 #### Example MCP Interactions
 
