@@ -4,8 +4,6 @@ set -e
 PUID=${PUID:-1000}
 PGID=${PGID:-1000}
 
-echo "Setting up user with PUID=${PUID} and PGID=${PGID}"
-
 groupadd -g "${PGID}" appuser 2>/dev/null || true
 useradd -u "${PUID}" -g "${PGID}" -d /home -s /bin/bash appuser 2>/dev/null || true
 
