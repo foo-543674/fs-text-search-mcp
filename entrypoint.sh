@@ -27,4 +27,4 @@ else
     chmod 755 /home/source
 fi
 
-exec gosu appuser fs-text-search-mcp --watch-dir /home/source --index-dir /home/index "$@"
+exec gosu appuser fs-text-search-mcp --watch-dir /home/source --index-dir /home/index --quiet "$@"
